@@ -54,8 +54,8 @@ def calculation(centr_x, centr_y, angle_of_rot):
 		print("Введены недопустимые координаты")
 
 
-centr_x = float(input("Введить координату x центра треугольника\nx = "))
-centr_y = float(input("Введить координату y центра треугольника\ny = "))
-angel_of_rot = float(input("Введить угол поворота\nangle = "))
+centr_x = float(input("Введите координату x центра треугольника\nx = "))
+centr_y = float(input("Введите координату y центра треугольника\ny = "))
+angel_of_rot = float(input("Введите угол поворота\nangle = "))
 
 calculation(centr_x, centr_y, angel_of_rot)
