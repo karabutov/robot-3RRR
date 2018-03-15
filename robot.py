@@ -24,12 +24,12 @@ def calculation(centr_x, centr_y, angle_of_rot):
 
 		def angles(topx, topy, x, y):
 			alpha = math.acos(math.sqrt((x - topx)**2 + (y - topy)**2) / (2 * l))
-			print(topx)
-			print(x)
 			if topx != x:
 				betta = math.atan((topy - y) / (topx - x))
-			else:
-				betta = -math.pi / 2
+			elif topy - y > 0:
+				betta = math.pi / 2
+			elif topy - y < 0:
+				betta = -math.pi / 2			
 			if topx - x < 0:
 				betta += math.pi
 			return alpha + betta, betta - alpha
