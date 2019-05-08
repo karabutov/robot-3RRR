@@ -19,6 +19,8 @@ y2 = 0.33
 x3 = 2.0
 y3 = 3.0
 
+
+   
 def jacobian_matrix(x, y, phi, theta1, theta2, theta3):
 
     def dx1(x, y, phi, theta1, theta2, theta3):
@@ -67,6 +69,38 @@ def jacobian_matrix(x, y, phi, theta1, theta2, theta3):
 
 
 
+def constr1(t):
+    x = t[0]
+    y = t[1]
+    phi = t[2]
+    theta1 = t[3]
+    xB1 = x1 + l * math.cos(theta1)
+    yB1 = y1 + l * math.sin(theta1)
+
+    return (x + k * math.cos(gamma1 + phi) - xB1)**2 + (y + k * math.sin(gamma1 + phi) - yB1)**2 - l**2
+
+def constr2(t):
+    x = t[0]
+    y = t[1]
+    phi = t[2]
+    theta2 = t[3]
+    xB2 = x2 + l * math.cos(theta2)
+    yB2 = y2 + l * math.sin(theta2)
+
+    return (x + k * math.cos(gamma2 + phi) - xB2)**2 + (y + k * math.sin(gamma2 + phi) - yB2)**2 - l**2
+
+
+def constr3(t):
+    x = t[0]
+    y = t[1]
+    phi = t[2]
+    theta3 = t[3]
+    xB3 = x3 + l * math.cos(theta3) 
+    yB3 = y3 + l * math.sin(theta3)
+       
+    return (x + k * math.cos(gamma3 + phi) - xB3)**2 + (y + k * math.sin(gamma3 + phi) - yB3)**2 - l**2
+
+
 def det_jacobian_func(args):
     x =	args[0]
     y =	args[1] 
@@ -81,11 +115,17 @@ def minus_det_jacobian_func(args):
     return -1 * det_jacobian_func(args)
 
 def is_jacobian_deg(aria):
-    args_b = np.array([aria[0][0], aria[1][0], a_phi, 0., 0., 0.])
-    args_e = np.array([aria[0][1], aria[1][1], a_phi, 2 * math.pi, 2 * math.pi, 2 * math.pi])
+    args_b = np.array([aria[0][0], aria[1][0], 0., 0., 0., 0.])
+    args_e = np.array([aria[0][1], aria[1][1], 2 * math.pi, 2 * math.pi, 2 * math.pi, 2 * math.pi])
 
-    min_solut = so.minimize(det_jacobian_func, (args_e + args_b) / 2., bounds = ((args_b[0], args_e[0]), (args_b[1], args_e[1]), (args_b[2], args_e[2]), (args_b[3], args_e[3]), (args_b[4], args_e[4]), (args_b[5], args_e[5])))
-    max_solut = so.minimize(minus_det_jacobian_func, (args_e + args_b) / 2., bounds = ((args_b[0], args_e[0]), (args_b[1], args_e[1]), (args_b[2], args_e[2]), (args_b[3], args_e[3]), (args_b[4], args_e[4]), (args_b[5], args_e[5])))
+    bnd = ((args_b[0], args_e[0]), (args_b[1], args_e[1]), (args_b[2], args_e[2]), (args_b[3], args_e[3]), (args_b[4], args_e[4]), (args_b[5], args_e[5]))
+
+    cons = ({'type': 'eq', 'fun': constr1},
+            {'type': 'eq', 'fun': constr2},
+            {'type': 'eq', 'fun': constr3})
+
+    min_solut = so.minimize(det_jacobian_func, (args_e + args_b) / 2., method="SLSQP", bounds = bnd, constraints=cons)
+    max_solut = so.minimize(minus_det_jacobian_func, (args_e + args_b) / 2., method="SLSQP", bounds = bnd, constraints=cons)
     max_of_f = -max_solut.fun
     min_of_f = min_solut.fun
 

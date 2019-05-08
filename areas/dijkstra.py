@@ -6,11 +6,11 @@ def search(boxes, x, y):
             return boxes[i].number
 
 def minimum_value(boxes):
-    min = boxes[0].value
+    minimum = boxes[0].value
     res = 0
     for i in range(boxes.size):
-        if boxes[i].value < min:
-            min = boxes[i].value
+        if boxes[i].value < minimum:
+            mininimum = boxes[i].value
             res = i
     return res
 
@@ -32,6 +32,9 @@ def dijkstra_algorithm(boxes, x, y):
         cur = minimum_value(boxes_c)
         
         for i in range(boxes_c[cur].neighbors.size):
+			if boxes_c[cur].neighbors[i].is_processed == True:
+                continue
+
             dist = distance(boxes_c[cur], boxes_c[cur].neighbors[i])
             if boxes_c[cur].value + dist < boxes_c[cur].neighbors[i].value:
                 boxes_c[cur].neighbors[i].value = boxes_c[cur].value + dist
