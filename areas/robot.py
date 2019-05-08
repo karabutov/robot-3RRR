@@ -200,6 +200,7 @@ y1 = 1.0
 x2 = 2.4
 y2 = 0.5
 
-trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+#trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, np.array([]))
 
-dr.draw(boxes, trajectory)
+

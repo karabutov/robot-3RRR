@@ -8,8 +8,8 @@ class Box:
         self.coordinates = np.array([[area[0][0], area[0][1]], [area[1][0], area[1][1]]])
         self.neighbors = np.array([])
         self.number = number
-        centre_x = area[0][0] + (area[0][1] - area[0][0])/2
-        centre_y = area[1][0] + (area[1][1] - area[1][0])/2
+        self.centre_x = area[0][0] + (area[0][1] - area[0][0])/2
+        self.centre_y = area[1][0] + (area[1][1] - area[1][0])/2
         self.is_processed = False
         self.EPSILON = 0.001
         self.value = 0xFFFFFFFF
