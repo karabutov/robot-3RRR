@@ -195,11 +195,12 @@ for i in range(boxes.size):
 #x2 = float(input("x2 = "))
 #y2 = float(input("y2 = "))
 
-x1 = 1.5
-y1 = 1.0
-x2 = 2.4
-y2 = 0.5
+x1 = 1.0
+y1 = 0.8
+x2 = 2.0
+y2 = 0.8
 
 trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
-
 dr.draw(boxes, trajectory)
+
+
