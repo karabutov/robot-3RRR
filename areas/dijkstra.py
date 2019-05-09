@@ -1,64 +1,70 @@
 import numpy as np
+import math
 
 def search(boxes, x, y):
     for i in range(boxes.size):
-        if x >= boxes[i].coordinates[0][0] and x <= boxes[i].coordinates[0][1] and y >= boxes[i].coordinates[1][0] and y <= boxes[i].coordinates[1][1]:
-            return boxes[i].number
+        if (boxes[i].is_internal_dot(x, y)):
+            return int(boxes[i].number)
 
 def minimum_value(boxes):
     minimum = boxes[0].value
     res = 0
+#    print("   m b ", boxes.size, minimum)
     for i in range(boxes.size):
+#        outp = "        step " + str(i) + ":" + str(boxes[i].number) + ": " + str(boxes[i].value)
         if boxes[i].value < minimum:
-            mininimum = boxes[i].value
+            minimum = boxes[i].value
             res = i
+#            outp = "   Min. " + outp
+#        print(outp)
     return res
 
 def distance(box1, box2):
-    return (box1.centre_x - box2.centre_x)**2 + (box1.centre_y - box2.centre_y)**2
+    return math.sqrt((box1.centre_x - box2.centre_x)**2 + (box1.centre_y - box2.centre_y)**2)
 
-def dijkstra_algorithm(boxes, x, y):
-    
-    tracks = np.ones(boxes.size)
-    initial = search(boxes, x, y)
-    
+def dijkstra_algorithm(boxes, initial):
     
     boxes_c = np.array(boxes)
     boxes_c[initial].value = 0
-    for i in range(boxes_c.size):
-        tracks[i] = initial  
-
+    
     while boxes_c.size != 0:
-        
         cur = minimum_value(boxes_c)
-        print(boxes_c[cur].neighbors.size)
+#        print("Min", boxes_c[cur].number)
+#        print(boxes_c[cur].neighbors.size)
         for i in range(boxes_c[cur].neighbors.size):
-            if boxes_c[cur].neighbors[i].is_processed == True:
+#            print(boxes_c[cur].neighbors[i].coordinates)
+            nb = boxes_c[cur].neighbors[i]
+            if nb.is_processed == True:
                 continue
-            dist = distance(boxes_c[cur], boxes_c[cur].neighbors[i])
-            if boxes_c[cur].value + dist < boxes_c[cur].neighbors[i].value:
-                boxes_c[cur].neighbors[i].value = boxes_c[cur].value + dist
-                tracks[boxes_c[cur].neighbors[i].number] = boxes_c[cur].number
-
-		
+            dist = distance(boxes_c[cur], nb)
+            if boxes_c[cur].value + dist < nb.value:
+                nb.value = boxes_c[cur].value + dist
+                nb.track = int(boxes_c[cur].number)
+#        boxes_c[cur].printvalues()
         boxes_c[cur].is_processed = True
-
         boxes_c = np.delete(boxes_c, cur, 0)   
-    return tracks
+    return
         
 def trajectory_search(boxes, x1, y1, x2, y2):
     
-    tracks = dijkstra_algorithm(boxes, x1, y1)
     initial = search(boxes, x1, y1)
+    if (initial < 0):
+        print("ERROR: Initial point out of valid area")
+        return np.array([])
+    
+    for i in range(boxes.size):
+        boxes[i].initialize(initial)
+    
+    dijkstra_algorithm(boxes, initial)
     final = search(boxes, x2, y2)
     
     trajectory = np.array([boxes[final]])
     cur = final
 
     while cur != initial:
-        trajectory = np.append(trajectory, [boxes[int(tracks[int(cur)])]], 0)
-        cur = tracks[int(cur)]
+        trajectory = np.append(trajectory, [boxes[cur]], 0)
+        cur = boxes[cur].track
         
-    trajectory = np.append(trajectory, [boxes[int(cur)]], 0)
+    trajectory = np.append(trajectory, [boxes[cur]], 0)
     
     return trajectory

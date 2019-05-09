@@ -4,9 +4,10 @@ import box
 import dijkstra as di
 import scipy.optimize as so
 import numpy as np
+import datetime
 
 
-EPSILON = 0.1
+EPSILON = 0.05
 
 size_side = 1.
 k = (2./3.) * (size_side * math.sqrt(3.) / 2.)
@@ -16,6 +17,9 @@ a_phi = 0.;
 gamma1 = math.pi * (0.5 + 1. * 2./3.) 
 gamma2 = math.pi * (0.5 + 2. * 2./3.) 
 gamma3 = math.pi * (0.5 + 3. * 2./3.)
+
+tprof2 = 0
+tprof3 = 0
 
 x1 = 0.0
 y1 = 0.0
@@ -39,25 +43,21 @@ def find_boundaries_y():
 def initial_limits():
     x_interval = find_boundaries_x()
     y_interval = find_boundaries_y()
-    phi_interval = np.array([0, 2 * math.pi])
-    theta1_interval = np.array([0, 2 * math.pi])
-    theta2_interval = np.array([0, 2 * math.pi])
-    theta3_interval = np.array([0, 2 * math.pi])
 
     res = np.zeros((6, 2))
     res[0][0] = x_interval[0]
     res[1][0] = y_interval[0]
-    res[2][0] = phi_interval[0]
-    res[3][0] = theta1_interval[0]
-    res[4][0] = theta2_interval[0]
-    res[5][0] = theta2_interval[0]
+    res[2][0] = 0
+    res[3][0] = 0
+    res[4][0] = 0
+    res[5][0] = 0
 
     res[0][1] = x_interval[1]
     res[1][1] = y_interval[1]
-    res[2][1] = phi_interval[1]
-    res[3][1] = theta1_interval[1]
-    res[4][1] = theta2_interval[1]
-    res[5][1] = theta2_interval[1]
+    res[2][1] = 2 * math.pi
+    res[3][1] = 2 * math.pi
+    res[4][1] = 2 * math.pi
+    res[5][1] = 2 * math.pi
 
     return res
 
@@ -142,14 +142,19 @@ def there_is_a_solution(aria):
     return True
 
 def calculating():
-
+    TPROF1 = 0
     res = np.array([initial_limits()])
     for i in range(2):
         cur_areas = res
+        res = res[0:1,:,:]
         while res.size != 0:
             res = np.delete(res, 0, 0)
         while(cur_areas.size != 0):
-            if(there_is_a_solution(np.array(cur_areas[0]))):
+            tps1 = datetime.datetime.now()
+            issol = there_is_a_solution(np.array(cur_areas[0]));
+            tps2 = datetime.datetime.now() - tps1
+            TPROF1 = TPROF1 + tps2.microseconds
+            if(issol):
                 if abs(cur_areas[0][i][1] - cur_areas[0][i][0]) < EPSILON or i >= 2:
                     res = np.append(res, np.array([cur_areas[0]]), 0)
                     cur_areas = np.delete(cur_areas, 0, 0)
@@ -157,28 +162,40 @@ def calculating():
                     tmp1 = np.array(cur_areas[0]);
                     tmp2 = np.array(cur_areas[0]);
                     cur_areas = np.delete(cur_areas, 0, 0)
+
                     middle = (tmp1[i][1] - tmp1[i][0]) / 2
                     tmp1[i][1] = tmp1[i][0] + middle
                     tmp2[i][0] = tmp1[i][0] + middle			
                     cur_areas = np.append(cur_areas, np.array([tmp1, tmp2]), 0)
             else :
                 cur_areas = np.delete(cur_areas, 0, 0)
-
+    print("TPROF1", TPROF1)
     return res
-
 
 #a_phi = float(input("Enter angle of rootation\nangel = "))
 a_phi = 0
+tprof1 = 0
+
+tstart = datetime.datetime.now()
+
 areas = calculating()
 
-print("Quontity of boxes = ", areas.size/12)
+delta = datetime.datetime.now() - tstart
 
-boxes = np.array([])
+print("Time1: " + str(delta.seconds) + "." + str(delta.microseconds))
+
+#print("Areas:", areas[0:3,0:2,:])
+
+print("Quontity of boxes = ", areas.shape[0])
+
+#print("Area shape:", areas.shape)
+
+boxes = np.empty((areas.shape[0],), dtype=np.object)
 n = 0
-while areas.size != 0:
-    boxes = np.append(boxes, [box.Box(areas[0], n)], 0)
-    n = n + 1
-    areas = np.delete(areas, 0, 0)
+for n in range(areas.shape[0]):
+    boxes[n] = box.Box(areas[n], n)
+
+#print("Boxes = ", boxes[0:3])
 
 for i in range(boxes.size):
     for j in range(boxes.size):
@@ -186,21 +203,77 @@ for i in range(boxes.size):
             continue
         if boxes[i].is_neighbor(boxes[j]):
             boxes[i].add_neighbor(boxes[j])
-            
+
 #for i in range(boxes.size):
-#    print(boxes[i].neighbors.size)
+#    boxes[i].printbox(EPSILON)
 
 #x1 = float(input("x1 = "))
 #y1 = float(input("y1 = "))
 #x2 = float(input("x2 = "))
 #y2 = float(input("y2 = "))
 
+print("Left -> Right")
 x1 = 1.0
 y1 = 0.8
 x2 = 2.0
 y2 = 0.8
-
 trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
 dr.draw(boxes, trajectory)
 
+print("Right -> Left")
+x1 = 2.0
+y1 = 0.8
+x2 = 1.0
+y2 = 0.8
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
 
+print("Down -> Top")
+x1 = 1.5
+y1 = 0.6
+x2 = 1.5
+y2 = 1.7
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
+
+print("Top -> Down")
+x1 = 1.5
+y1 = 1.7
+x2 = 1.5
+y2 = 0.6
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
+
+print("Right Down -> Left Top")
+x1 = 2.3
+y1 = 0.6
+x2 = 1.4
+y2 = 1.7
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
+
+print("Left Top -> Right Down")
+x1 = 1.4
+y1 = 1.7
+x2 = 2.3
+y2 = 0.6
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
+
+print("Right Top -> Left Down")
+x1 = 2.0
+y1 = 1.4
+x2 = 1.0
+y2 = 0.7
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
+
+print("Left Down -> Right Top")
+x1 = 1.0
+y1 = 0.7
+x2 = 2.0
+y2 = 1.4
+trajectory = di.trajectory_search(boxes, x1, y1, x2, y2)
+dr.draw(boxes, trajectory)
+
+print("That's all!!!")
