@@ -3,8 +3,8 @@ import scipy.optimize as so
 import numpy as np
 import datetime
 
-EPSILON = 0.03
-ANGLE = 36.
+EPSILON = 0.3
+ANGLE = 4.
 
 
 size_side = 1.
@@ -275,7 +275,7 @@ def calculating(method):
         tps2 = datetime.datetime.now() - tps1
         TPROF1 = TPROF1 + tps2.microseconds
         if(issol):
-            if abs(cur_areas[0][2[1] - cur_areas[0][2][0]) < 2 * math.pi / ANGLE.:
+            if abs(cur_areas[0][2][1] - cur_areas[0][2][0]) < 2 * math.pi / ANGLE:
                 res = np.append(res, np.array([cur_areas[0]]), 0)
                 cur_areas = np.delete(cur_areas, 0, 0)
             else :
@@ -283,9 +283,9 @@ def calculating(method):
                 tmp2 = np.array(cur_areas[0]);
                 cur_areas = np.delete(cur_areas, 0, 0)
 
-                middle = (tmp1[i][1] - tmp1[i][0]) / 2
-                tmp1[i][1] = tmp1[i][0] + middle
-                tmp2[i][0] = tmp1[i][0] + middle			
+                middle = (tmp1[2][1] - tmp1[2][0]) / 2
+                tmp1[2][1] = tmp1[2][0] + middle
+                tmp2[2][0] = tmp1[2][0] + middle			
                 cur_areas = np.append(cur_areas, np.array([tmp1, tmp2]), 0)
         else :
             cur_areas = np.delete(cur_areas, 0, 0)
