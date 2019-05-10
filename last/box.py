@@ -7,7 +7,21 @@ class Box:
         self.x1 = area[0][1]
         self.y0 = area[1][0]
         self.y1 = area[1][1]
-        self.coordinates = np.array([[self.x0, self.x1], [self.y0, self.y1]])
+        self.phi0 = area[2][0]
+        self.phi1 = area[2][1]
+        self.coordinates = np.array([[self.x0, self.x1], [self.y0, self.y1], [self.phi0, self.phi1]])
+        self.lines = np.array([[[self.x0, self.x0],[self.y0, self.y0], [self.phi0, self.phi1]],\
+                         [[self.x0, self.x1],[self.y0, self.y0], [self.phi0, self.phi0]],\
+                         [[self.x0, self.x0],[self.y0, self.y1], [self.phi0, self.phi0]],\
+                         [[self.x0, self.x1],[self.y1, self.y1], [self.phi0, self.phi0]],\
+                         [[self.x1, self.x1],[self.y0, self.y1], [self.phi0, self.phi0]],\
+                         [[self.x1, self.x1],[self.y0, self.y0], [self.phi0, self.phi1]],\
+                         [[self.x1, self.x1],[self.y1, self.y1], [self.phi0, self.phi1]],\
+                         [[self.x1, self.x1],[self.y0, self.y1], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x1],[self.y0, self.y0], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x0],[self.y0, self.y1], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x1],[self.y1, self.y1], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x0],[self.y1, self.y1], [self.phi0, self.phi1]]])
         self.neighbors = np.array([])
         self.number = number
         self.centre_x = self.x0 + (self.x1 - self.x0)/2
