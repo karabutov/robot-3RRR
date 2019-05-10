@@ -29,8 +29,7 @@ def dijkstra_algorithm(boxes, initial):
     
     while boxes_c.size != 0:
         cur = minimum_value(boxes_c)
-#        print("Min", boxes_c[cur].number)
-#        print(boxes_c[cur].neighbors.size)
+#        print("Min V", boxes_c[cur].number)
         for i in range(boxes_c[cur].neighbors.size):
 #            print(boxes_c[cur].neighbors[i].coordinates)
             nb = boxes_c[cur].neighbors[i]
@@ -51,9 +50,9 @@ def trajectory_search(boxes, x1, y1, x2, y2):
     if (initial < 0):
         print("ERROR: Initial point out of valid area")
         return np.array([])
-    
+
     for i in range(boxes.size):
-        boxes[i].initialize(initial)
+        boxes[i].initialize(initial, i)
     
     dijkstra_algorithm(boxes, initial)
     final = search(boxes, x2, y2)
@@ -61,10 +60,13 @@ def trajectory_search(boxes, x1, y1, x2, y2):
     trajectory = np.array([boxes[final]])
     cur = final
 
+    print("Initial: " + str(initial) + "; Final: " + str(final))
     while cur != initial:
         trajectory = np.append(trajectory, [boxes[cur]], 0)
         cur = boxes[cur].track
-        
+
     trajectory = np.append(trajectory, [boxes[cur]], 0)
+
+    print("trajectory", trajectory.shape)
     
     return trajectory

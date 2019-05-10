@@ -2,29 +2,42 @@ import numpy as np
 
 class Box:
     
-    def __init__(self, area, number):
+    def __init__(self, area):
         self.x0 = area[0][0]
         self.x1 = area[0][1]
         self.y0 = area[1][0]
         self.y1 = area[1][1]
-        self.coordinates = np.array([[self.x0, self.x1], [self.y0, self.y1]])
+        self.phi0 = area[2][0]
+        self.phi1 = area[2][1]        
+        self.w2 = ((self.x1 - self.x0) / 2) * 1.1
+        self.ph2 = ((self.phi1 - self.y0) / 2) * 1.1
+        self.coordinates = np.array([[self.x0, self.x1], [self.y0, self.y1], [self.phi0, self.phi1]])
+        self.lines = np.array([[[self.x0, self.x0],[self.y0, self.y0], [self.phi0, self.phi1]],\
+                         [[self.x0, self.x1],[self.y0, self.y0], [self.phi0, self.phi0]],\
+                         [[self.x0, self.x0],[self.y0, self.y1], [self.phi0, self.phi0]],\
+                         [[self.x0, self.x1],[self.y1, self.y1], [self.phi0, self.phi0]],\
+                         [[self.x1, self.x1],[self.y0, self.y1], [self.phi0, self.phi0]],\
+                         [[self.x1, self.x1],[self.y0, self.y0], [self.phi0, self.phi1]],\
+                         [[self.x1, self.x1],[self.y1, self.y1], [self.phi0, self.phi1]],\
+                         [[self.x1, self.x1],[self.y0, self.y1], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x1],[self.y0, self.y0], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x0],[self.y0, self.y1], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x1],[self.y1, self.y1], [self.phi1, self.phi1]],\
+                         [[self.x0, self.x0],[self.y1, self.y1], [self.phi0, self.phi1]]])
         self.neighbors = np.array([])
-        self.number = number
         self.centre_x = self.x0 + (self.x1 - self.x0)/2
         self.centre_y = self.y0 + (self.y1 - self.y0)/2
-        self.initialize(0)
+        self.centre_p = self.phi0 + (self.phi1 - self.phi0)/2
+        self.initialize(0, 0)
     
-    def initialize(self, initial):
+    def initialize(self, initial, number):
         self.is_processed = False
         self.value = 0xFFFFFF
         self.track = int(initial);
+        self.number = number
 
     def is_neighbor(self, box):
-        
-        xd = ((self.x1 - self.x0) / 2 + (box.x1 - box.x0) / 2) * 1.01
-        yd = ((self.y1 - self.y0) / 2 + (box.y1 - box.y0) / 2) * 1.01
-        
-        if (abs(self.centre_x - box.centre_x) < xd and abs(self.centre_y - box.centre_y) < yd):
+        if (abs(self.centre_x - box.centre_x) < (self.w2 + box.w2) and abs(self.centre_y - box.centre_y) < (self.h2 + box.h2)):
             return True
         
         return False
