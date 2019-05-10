@@ -3,9 +3,8 @@ import scipy.optimize as so
 import numpy as np
 import datetime
 
-EPSILON = 0.3
-ANGLE = 4.
-
+EPSILON = 0.1
+ANGLE = math.pi/8
 
 size_side = 1.
 k = (2./3.) * (size_side * math.sqrt(3.) / 2.)
@@ -44,17 +43,17 @@ def initial_limits():
     res = np.zeros((6, 2))
     res[0][0] = x_interval[0]
     res[1][0] = y_interval[0]
-    res[2][0] = 0
-    res[3][0] = 0
-    res[4][0] = 0
-    res[5][0] = 0
+    res[2][0] = -math.pi
+    res[3][0] = -math.pi
+    res[4][0] = -math.pi
+    res[5][0] = -math.pi
 
     res[0][1] = x_interval[1]
     res[1][1] = y_interval[1]
-    res[2][1] = 2 * math.pi
-    res[3][1] = 2 * math.pi
-    res[4][1] = 2 * math.pi
-    res[5][1] = 2 * math.pi
+    res[2][1] = math.pi
+    res[3][1] = math.pi
+    res[4][1] = math.pi
+    res[5][1] = math.pi
 
     return res
 
@@ -143,12 +142,10 @@ def convolution(args):
 
 
 
-def is_a_zero(func, minus_func, method, aria):
-    args_b = np.array([aria[0][0], aria[1][0], aria[2][0], aria[3][0], aria[4][0], aria[5][0]])
-    args_e = np.array([aria[0][1], aria[1][1], aria[2][1], aria[3][1], aria[4][1], aria[5][1]])
+def is_a_zero(func, minus_func, method, bnd):
     
-    min_solut = so.minimize(func,  (args_e + args_b) / 2., method=method, bounds = ((args_b[0], args_e[0]), (args_b[1], args_e[1]), (args_b[2], args_e[2]), (args_b[3], args_e[3]), (args_b[4], args_e[4]), (args_b[5], args_e[5])))
-    max_solut = so.minimize(minus_func, (args_e + args_b) / 2., method=method, bounds = ((args_b[0], args_e[0]), (args_b[1], args_e[1]), (args_b[2], args_e[2]), (args_b[3], args_e[3]), (args_b[4], args_e[4]), (args_b[5], args_e[5])))
+    min_solut = so.minimize(func,  (args_e + args_b) / 2., method=method, bounds = bnd)
+    max_solut = so.minimize(minus_func, (args_e + args_b) / 2., method=method, bounds = bnd)
 
     max_of_f = -max_solut.fun
     min_of_f = min_solut.fun
@@ -159,20 +156,20 @@ def is_a_zero(func, minus_func, method, aria):
     return True
 
 def optimization(aria):
-        
+
     args_b = np.array([aria[0][0], aria[1][0], aria[2][0], aria[3][0], aria[4][0], aria[5][0]])
     args_e = np.array([aria[0][1], aria[1][1], aria[2][1], aria[3][1], aria[4][1], aria[5][1]])   
-
-    if not(is_a_zero(first_equation, minus_first_equation, "SLSQP", aria)):
-        if not(is_a_zero(first_equation, minus_first_equation, "L-BFGS-B", aria)):
+    bnd = ((args_b[0], args_e[0]), (args_b[1], args_e[1]), (args_b[2], args_e[2]), (args_b[3], args_e[3]), (args_b[4], args_e[4]), (args_b[5], args_e[5]))
+    if not(is_a_zero(first_equation, minus_first_equation, "SLSQP",bnd)):
+        if not(is_a_zero(first_equation, minus_first_equation, "L-BFGS-B", bnd)):
             return False
 
-    if not(is_a_zero(second_equation, minus_second_equation, "SLSQP", aria)):
-        if not(is_a_zero(second_equation, second_equation, "L-BFGS-B", aria)):
+    if not(is_a_zero(second_equation, minus_second_equation, "SLSQP", bnd)):
+        if not(is_a_zero(second_equation, second_equation, "L-BFGS-B", bnd)):
             return False
 
-    if not(is_a_zero(third_equation, minus_third_equation, "SLSQP", aria)):
-        if not(is_a_zero(third_equation, minus_third_equation, "L-BFGS-B", aria)):
+    if not(is_a_zero(third_equation, minus_third_equation, "SLSQP", bnd)):
+        if not(is_a_zero(third_equation, minus_third_equation, "L-BFGS-B", bnd)):
             return False
 
     return True
@@ -212,18 +209,16 @@ def has_solution(centr_x, centr_y, angle_of_rot):
 def inverse_problem(aria):
     centre_x = aria[0][0] + (aria[0][1] - aria[0][0])/2
     centre_y = aria[1][0] + (aria[1][1] - aria[1][0])/2
+    centre_p = aria[2][0] + (aria[2][1] - aria[2][0])/2
     
-    phi = 0
-    while phi <= 2 * math.pi:
-        if has_solution(centre_x, centre_y, phi):
-            return True
-        phi = phi + math.pi / 8.
-
+    if has_solution(centre_x, centre_y, centre_p):
+        return True
+    
     return False
 
 def there_is_a_solution(aria, method):
 
-    if abs(aria[0][0] - aria[0][1]) >= EPSILON or abs(aria[1][0] - aria[1][1]) >= EPSILON:
+    if abs(aria[0][0] - aria[0][1]) >= EPSILON or abs(aria[1][0] - aria[1][1]) >= EPSILON or abs(aria[2][0] - aria[2][1]) >= ANGLE:
         return True
 
     if method == "op":    
@@ -238,57 +233,41 @@ def there_is_a_solution(aria, method):
 
 def calculating(method):
     TPROF1 = 0
+    TPROF2 = datetime.datetime.now()
+    TPROF3 = datetime.datetime.now()
     res = np.array([initial_limits()])
-    for i in range(2):
+    ncycle = 0
+    for i in range(3):
         cur_areas = res
-        res = res[0:1,:,:]
-        while res.size != 0:
-            res = np.delete(res, 0, 0)
+        res = np.empty((0,6,2,), dtype=np.float64)
+#        print("Arrays", i, res, cur_areas.shape)
+        print("cur_areas", i, cur_areas.shape)
         while(cur_areas.size != 0):
+            c_area = cur_areas[0];
+            cur_areas = np.delete(cur_areas, 0, 0)
             tps1 = datetime.datetime.now()
-            issol = there_is_a_solution(np.array(cur_areas[0]), method);
+            issol = there_is_a_solution(np.array(c_area), method);
             tps2 = datetime.datetime.now() - tps1
             TPROF1 = TPROF1 + tps2.microseconds
             if(issol):
-                if abs(cur_areas[0][i][1] - cur_areas[0][i][0]) < EPSILON or i >= 2:
-                    res = np.append(res, np.array([cur_areas[0]]), 0)
-                    cur_areas = np.delete(cur_areas, 0, 0)
+                if abs(c_area[i][1] - c_area[i][0]) < (EPSILON if i <= 1 else ANGLE):
+                    res = np.append(res, np.array([c_area]), 0)
                 else :
-                    tmp1 = np.array(cur_areas[0]);
-                    tmp2 = np.array(cur_areas[0]);
-                    cur_areas = np.delete(cur_areas, 0, 0)
+                    tmp1 = np.array(c_area);
+                    tmp2 = np.array(c_area);
 
                     middle = (tmp1[i][1] - tmp1[i][0]) / 2
                     tmp1[i][1] = tmp1[i][0] + middle
                     tmp2[i][0] = tmp1[i][0] + middle			
                     cur_areas = np.append(cur_areas, np.array([tmp1, tmp2]), 0)
-            else :
-                cur_areas = np.delete(cur_areas, 0, 0)
-        
-    cur_areas = res
-    res = res[0:1,:,:]
-    while res.size != 0:
-        res = np.delete(res, 0, 0)
-    while(cur_areas.size != 0):
-        tps1 = datetime.datetime.now()
-        issol = there_is_a_solution(np.array(cur_areas[0]), method);
-        tps2 = datetime.datetime.now() - tps1
-        TPROF1 = TPROF1 + tps2.microseconds
-        if(issol):
-            if abs(cur_areas[0][2][1] - cur_areas[0][2][0]) < 2 * math.pi / ANGLE:
-                res = np.append(res, np.array([cur_areas[0]]), 0)
-                cur_areas = np.delete(cur_areas, 0, 0)
-            else :
-                tmp1 = np.array(cur_areas[0]);
-                tmp2 = np.array(cur_areas[0]);
-                cur_areas = np.delete(cur_areas, 0, 0)
-
-                middle = (tmp1[2][1] - tmp1[2][0]) / 2
-                tmp1[2][1] = tmp1[2][0] + middle
-                tmp2[2][0] = tmp1[2][0] + middle			
-                cur_areas = np.append(cur_areas, np.array([tmp1, tmp2]), 0)
-        else :
-            cur_areas = np.delete(cur_areas, 0, 0)
-    
-    print("TPROF1", TPROF1)
+            ncycle += 1
+            if (ncycle%1000 == 0):
+                tps2 = datetime.datetime.now()
+                delta_all = tps2 - TPROF2
+                delta1000 = tps2 - TPROF3
+                print("C: " + str(ncycle) + "; " + str(i) + "; " + str(cur_areas.size) + " : " + str(res.size) + "; da: " + str(delta_all.seconds - TPROF1/1000000) + "; d1000: " + str(delta1000.seconds) + "; all: " + str(delta_all.seconds))
+                TPROF3 = tps2
+#        print("I: ", i, "cycles", ncycle, res[:,0:2,:])
+                
+    print("TPROF1", TPROF1, "cycles", ncycle)
     return res
