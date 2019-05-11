@@ -37,7 +37,7 @@ p2 = 0.4
 
 tstart = datetime.datetime.now()
 
-singularity, boxes = jac.singularity_points(boxes)
+#singularity, boxes = jac.singularity_points(boxes)
 
 delta = datetime.datetime.now() - tstart
 print("Singularity time: " + str(delta.seconds) + "." + str(delta.microseconds))
@@ -68,7 +68,7 @@ for i in range(boxes.size):
 #    boxes[i].printbox(area.EPSILON, area.ANGLE)
 
 tstart = datetime.datetime.now()
-trajectory = di.trajectory_search(boxes, x1, y1, p1, x2, y2, p2)
+#trajectory = di.trajectory_search(boxes, x1, y1, p1, x2, y2, p2)
 
 delta = datetime.datetime.now() - tstart
 print("Trajectory time1: " + str(delta.seconds) + "." + str(delta.microseconds))
@@ -79,8 +79,8 @@ tstart = datetime.datetime.now()
 #d3.draw(np.array([]), trajectory, np.array([]))
 #d3.draw(boxes, trajectory, singularity)
 #d3.draw(np.array([]), trajectory, singularity)
-#d3.draw(boxes, np.array([]), np.array([]))
-d3.draw(boxes, np.array([]), singularity)
+d3.draw(boxes, np.array([]), np.array([]))
+#d3.draw(boxes, np.array([]), singularity)
 
 #dr.draw(boxes, trajectory, singularity)
 #dr.draw(boxes, trajectory, np.array([]))
