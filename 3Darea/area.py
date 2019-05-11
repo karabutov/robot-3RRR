@@ -4,7 +4,7 @@ import numpy as np
 import datetime
 
 EPSILON = 0.1
-ANGLE = math.pi/8
+ANGLE = math.pi/4
 
 size_side = 1.
 k = (2./3.) * (size_side * math.sqrt(3.) / 2.)
